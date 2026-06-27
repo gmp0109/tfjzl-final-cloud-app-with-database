@@ -132,19 +132,27 @@ def show_exam_result(request, course_id, submission_id):
     selected_choice_ids = [choice.id for choice in selected_choices]
 
     total_score = 0
+    question_results = []
+
     for question in course.question_set.all():
-        if question.is_get_score(selected_choice_ids):
+        is_correct = question.is_get_score(selected_choice_ids)
+
+        if is_correct:
             total_score += question.grade
+
+        question_results.append({
+            'question': question,
+            'is_correct': is_correct,
+            'selected_choices': selected_choices.filter(question=question),
+        })
 
     context = {
         'course': course,
-        'submission': submission,
-        'choices': selected_choices,
         'grade': total_score,
+        'question_results': question_results,
     }
 
     return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
-
 
 # An example method to collect the selected choices from the exam form from the request object
 def extract_answers(request):
